@@ -13,56 +13,28 @@ class DropBread extends StatefulWidget {
 }
 
 class _DropBreadState extends State<DropBread> {
-  bool _hovering = false;
+  bool hovering = false;
 
   @override
   Widget build(BuildContext context) {
-    final scene = context.watch<KotaSceneController>();
+    final scene = context.read<KotaSceneController>();
 
     return DragTarget<Ingredient>(
       onWillAcceptWithDetails: (_) {
-        setState(() {
-          _hovering = true;
-        });
+        setState(() => hovering = true);
         return true;
       },
       onLeave: (_) {
-        setState(() {
-          _hovering = false;
-        });
+        setState(() => hovering = false);
       },
       onAcceptWithDetails: (details) {
-        setState(() {
-          _hovering = false;
-        });
+        setState(() => hovering = false);
 
         scene.addIngredient(details.data);
       },
-      builder: (_, candidate, rejected) {
-        return SizedBox(
-          width: 380,
-          height: 420,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              BreadLayer(
-                hovering: _hovering,
-              ),
-
-              if (scene.isEmpty)
-                const Positioned(
-                  top: 15,
-                  child: Text(
-                    "Drag ingredients here",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-            ],
-          ),
+      builder: (_, __, ___) {
+        return BreadLayer(
+          hovering: hovering,
         );
       },
     );

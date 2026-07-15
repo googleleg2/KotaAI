@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide MenuController;
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../controllers/cart_controller.dart';
@@ -16,6 +16,7 @@ import '../../controllers/menu_controller.dart';
 // import '../features/builder/widgets/floating_checkout.dart';
 // import '../features/builder/widgets/ingredient_tray.dart';
 // import '../widgets/animated_price.dart';
+import '../../features/builder/widgets/builder_canvas.dart';
 
 class BuilderScreen extends StatelessWidget {
   const BuilderScreen({super.key});
@@ -35,7 +36,7 @@ class BuilderScreen extends StatelessWidget {
         cartController: cart,
       ),
 
-      child: Consumer<MenuController>(
+      child: Consumer<MenusController>(
         builder: (_, menu, __) {
 
           return Scaffold(
@@ -61,7 +62,7 @@ class BuilderScreen extends StatelessWidget {
                       flex: 6,
 
                       child: Center(
-                        child: DropBread(),
+                        child: BuilderCanvas(),
                       ),
                     ),
 

@@ -1,5 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart' hide MenuController;
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'config/app_router.dart';
@@ -34,7 +34,7 @@ class KotaAI extends StatelessWidget {
           create: (_) => CartController(),
         ),
         ChangeNotifierProvider(
-          create: (_) => MenuController(),
+          create: (_) => MenusController()..loadMenu(),
         ),
         ChangeNotifierProvider(
           create: (_) => NotificationController(),

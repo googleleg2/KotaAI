@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/ingredient.dart';
 import '../repositories/menu_repository.dart';
 
-class MenuController extends ChangeNotifier {
+class MenusController extends ChangeNotifier {
   final MenuRepository _repository =
       const MenuRepository();
 

@@ -10,6 +10,7 @@ class CartController extends ChangeNotifier {
 
   List<CartItem> get items => List.unmodifiable(_items);
 
+  /// Base kota + toppings
   double get totalPrice {
     double total = _baseKotaPrice;
 
@@ -20,6 +21,7 @@ class CartController extends ChangeNotifier {
     return total;
   }
 
+  /// Number of toppings
   int get totalItems {
     int total = 0;
 
@@ -30,12 +32,27 @@ class CartController extends ChangeNotifier {
     return total;
   }
 
+  bool get isEmpty => _items.isEmpty;
+
   bool contains(Ingredient ingredient) {
     return _items.any(
       (item) => item.ingredient.id == ingredient.id,
     );
   }
 
+  int quantityOf(Ingredient ingredient) {
+    try {
+      return _items
+          .firstWhere(
+            (item) => item.ingredient.id == ingredient.id,
+          )
+          .quantity;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Add one ingredient
   void addIngredient(Ingredient ingredient) {
     final index = _items.indexWhere(
       (item) => item.ingredient.id == ingredient.id,
@@ -54,6 +71,7 @@ class CartController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Remove one ingredient
   void decreaseIngredient(Ingredient ingredient) {
     final index = _items.indexWhere(
       (item) => item.ingredient.id == ingredient.id,
@@ -70,6 +88,7 @@ class CartController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Remove ingredient completely
   void removeIngredient(Ingredient ingredient) {
     _items.removeWhere(
       (item) => item.ingredient.id == ingredient.id,
@@ -78,20 +97,14 @@ class CartController extends ChangeNotifier {
     notifyListeners();
   }
 
-  int quantityOf(Ingredient ingredient) {
-    try {
-      return _items
-          .firstWhere(
-            (item) => item.ingredient.id == ingredient.id,
-          )
-          .quantity;
-    } catch (_) {
-      return 0;
-    }
-  }
-
-  void clearCart() {
+  /// Used by KotaSceneController
+  void clear() {
     _items.clear();
     notifyListeners();
+  }
+
+  /// Backwards compatibility
+  void clearCart() {
+    clear();
   }
 }

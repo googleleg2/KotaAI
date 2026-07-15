@@ -5,74 +5,73 @@ import '../../../models/ingredient.dart';
 import '../models/stacked_ingredient.dart';
 
 class KotaSceneController extends ChangeNotifier {
+  final CartController cartController;
+
   KotaSceneController({
-    required CartController cartController,
-  }) : _cartController = cartController;
+    required this.cartController,
+  });
 
-  final CartController _cartController;
-
+  /// Ingredients currently stacked on the Kota
   final List<StackedIngredient> _stack = [];
 
-  List<StackedIngredient> get stack =>
-      List.unmodifiable(_stack);
+  List<StackedIngredient> get stack => List.unmodifiable(_stack);
 
-  bool get isEmpty => _stack.isEmpty;
+  /// Current total height of the stack
+  double get stackHeight {
+    double height = 55;
 
-  int get stackCount => _stack.length;
+    for (final item in _stack) {
+      height += item.ingredient.stackHeight;
+    }
 
-  void addIngredient(Ingredient ingredient) {
-  double currentHeight = 90;
-
-  for (final item in _stack) {
-    currentHeight += item.ingredient.stackHeight;
+    return height;
   }
 
-  _stack.add(
-    StackedIngredient(
+  /// Add ingredient onto the Kota
+  void addIngredient(Ingredient ingredient) {
+    double yPosition = 55;
+
+    for (final item in _stack) {
+      yPosition += item.ingredient.stackHeight;
+    }
+
+    final stacked = StackedIngredient(
       ingredient: ingredient,
-      yOffset: currentHeight,
-      addedAt: DateTime.now(),
-      rotation: 0,
-      scale: 1,
-    ),
-  );
+      yOffset: yPosition,
+      animationOffset: 40,
+      scale: 1.15,
+    );
 
-  _cartController.addIngredient(ingredient);
+    _stack.add(stacked);
 
-  notifyListeners();
-}
+    cartController.addIngredient(ingredient);
 
-  void removeTopIngredient() {
+    notifyListeners();
+  }
+
+  /// Remove the last ingredient
+  void removeLastIngredient() {
     if (_stack.isEmpty) return;
 
     final removed = _stack.removeLast();
 
-    _cartController.decreaseIngredient(
-      removed.ingredient,
-    );
+    cartController.removeIngredient(removed.ingredient);
 
     notifyListeners();
   }
 
-  void removeIngredient(StackedIngredient item) {
-    _stack.remove(item);
-
-    _cartController.decreaseIngredient(
-      item.ingredient,
-    );
-
-    notifyListeners();
-  }
-
+  /// Remove all ingredients
   void clear() {
-    for (final item in _stack) {
-      _cartController.decreaseIngredient(
-        item.ingredient,
-      );
-    }
-
     _stack.clear();
 
+    cartController.clear();
+
     notifyListeners();
   }
+
+  /// Returns true if the Kota has no toppings
+  bool get isEmpty => _stack.isEmpty;
+
+  /// Number of stacked ingredients
+  int get count => _stack.length;
 }
