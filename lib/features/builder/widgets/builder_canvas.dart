@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:kota_ai/features/builder/widgets/drop_bread.dart';
 import 'package:provider/provider.dart';
 
-// import '../../../controllers/kota_scene_controller.dart';
-// import '../../../widgets/drop_bread.dart';
 import '../controllers/kota_scene_controller.dart';
+import 'drop_bread.dart';
 import 'ingredient_stack.dart';
 
 class BuilderCanvas extends StatelessWidget {
@@ -16,19 +14,30 @@ class BuilderCanvas extends StatelessWidget {
   Widget build(BuildContext context) {
     final scene = context.watch<KotaSceneController>();
 
-    return SizedBox(
-      width: 420,
-      height: 480,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          const DropBread(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest;
 
-          IngredientStack(
-            ingredients: scene.stack,
+        return Center(
+          child: FittedBox(
+            fit: BoxFit.contain,
+            child: SizedBox(
+              width: 420,
+              height: 480,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const DropBread(),
+
+                  IngredientStack(
+                    ingredients: scene.stack,
+                  ),
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
