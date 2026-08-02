@@ -1,0 +1,325 @@
+Step 1
+
+Run:
+
+firebase emulators:start --only functions
+
+What happens?
+
+Step 2
+
+If it still doesn't start, run:
+
+firebase init functions
+
+If it says:
+
+Functions: already initialized
+
+that's fine.
+
+Step 3
+
+Show me your project structure.
+
+Run:
+
+dir
+
+or
+
+tree
+
+I want to see something like:
+
+firebase.json
+
+functions/
+    package.json
+    node_modules/
+    index.js
+Step 4
+
+Open firebase.json and paste it here.
+
+I'm specifically looking for something like:
+
+{
+  "functions": {
+    "source": "functions"
+  },
+  "hosting": {
+    ...
+  }
+}
+
+If the "functions" section is missing, Firebase has no idea you have Cloud Functions, so it only starts Hosting.
+
+I suspect one of these two things has happened:
+Functions was never initialized (most likely).
+Your firebase.json doesn't contain a "functions" section.
+
+Once you paste your firebase.json, we'll fix it in about a minute and get the Functions emulator running. From there, we can continue building the PayPal backend.
+
+You can access the PayPal Developer Dashboard here:
+
+PayPal Developer Dashboard
+
+https://developer.paypal.com/dashboard/
+
+From there:
+
+Sign in with your real PayPal account (this is only to access the developer portal).
+Go to Apps & Credentials to manage your Sandbox app.
+Go to Testing Tools → Sandbox Accounts to view or create Sandbox buyer and seller accounts.
+
+You can also go directly to the Sandbox Accounts page:
+
+Sandbox Accounts
+
+https://developer.paypal.com/dashboard/accounts/
+
+There you'll see:
+
+Business sandbox account (your merchant)
+Personal sandbox account (your test customer)
+
+Use the Personal sandbox account's email and password when the PayPal Sandbox checkout asks you to log in—not your real PayPal account credentials.
+
+If you can't remember the sandbox account password, let me know what you see on the Sandbox Accounts page, and I'll guide you through resetting it or creating a new buyer account.
+
+it works
+
+Fantastic! 🎉
+
+That means your entire payment flow is working up to PayPal approval.
+
+So far you've successfully completed:
+
+✅ Flutter app calls your Firebase Function.
+✅ Firebase Function authenticates with PayPal.
+✅ Firebase Function creates a PayPal Order.
+✅ Flutter receives the approvalUrl.
+✅ PayPal Sandbox opens.
+✅ You can log in with a Sandbox Personal account.
+
+That's a significant milestone.
+
+What's next?
+
+The next step is the most important part of the payment process:
+
+Milestone 2.4 — Capture the Payment
+
+Right now, when the customer approves the payment, the money is only authorized. Your backend still needs to tell PayPal:
+
+"Capture this approved order."
+
+The flow will be:
+
+Flutter
+   │
+   ▼
+Create PayPal Order
+   │
+   ▼
+Customer Approves Payment
+   │
+   ▼
+Firebase Function
+capturePaypalOrder
+   │
+   ▼
+PayPal captures payment
+   │
+   ▼
+Payment completed
+
+Only after a successful capture should your app:
+
+Create the order in Firestore.
+Mark it as Paid.
+Clear the shopping cart.
+Show a "Payment Successful" screen.
+After that
+
+We'll implement Milestone 2.5:
+
+PayPal Payment Captured
+        │
+        ▼
+Save Order to Firestore
+        │
+        ▼
+Generate Order Number
+        │
+        ▼
+Save Customer Details
+        │
+        ▼
+Save Cart Items
+        │
+        ▼
+Save Payment Status
+
+At that point, your checkout flow will follow the same pattern used by many production e-commerce systems:
+
+Secure backend-only payment capture.
+No PayPal secret in the Flutter app.
+Orders stored in Firestore only after successful payment.
+
+We're now entering the final stages of building a complete, secure PayPal checkout for
+
+
+
+Excellent. Now that Firebase Functions are working, we can build the PayPal backend the right way.
+
+We'll start with Milestone 2.1 – PayPal Authentication (OAuth).
+
+Architecture
+Flutter
+    │
+    ▼
+Firebase Function
+    │
+    ▼
+PayPal OAuth
+    │
+    ▼
+Access Token
+
+The Flutter app will never know your PayPal Secret. Only the Firebase Function will.
+
+Step 1 - Install Axios
+
+Inside the functions folder:
+
+npm install axios
+Step 2 - Add PayPal credentials
+
+Open:
+
+functions/.env
+
+Add:
+
+PAYPAL_CLIENT_ID=YOUR_SANDBOX_CLIENT_ID
+PAYPAL_SECRET=YOUR_SANDBOX_SECRET
+PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
+
+For now we'll use Sandbox.
+
+Later, production becomes:
+
+PAYPAL_BASE_URL=https://api-m.paypal.com
+Step 3 - Create the folder structure
+
+Inside functions create:
+
+functions/
+│
+├── paypal/
+│      paypal_client.js
+│      auth.js
+│      create_order.js
+│      capture_order.js
+│
+├── firestore/
+│      orders.js
+│
+└── index.js
+
+For Milestone 2.1 we only need:
+
+paypal_client.js
+auth.js
+Step 4 - paypal/paypal_client.js
+
+Create:
+
+const axios = require("axios");
+
+const BASE_URL = process.env.PAYPAL_BASE_URL;
+
+async function getAccessToken() {
+  const auth = Buffer.from(
+    `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`
+  ).toString("base64");
+
+  const response = await axios.post(
+    `${BASE_URL}/v1/oauth2/token`,
+    "grant_type=client_credentials",
+    {
+      headers: {
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    }
+  );
+
+  return response.data.access_token;
+}
+
+module.exports = {
+  getAccessToken,
+};
+
+This file handles all PayPal authentication.
+
+Step 5 - paypal/auth.js
+
+Create:
+
+const { onRequest } = require("firebase-functions/v2/https");
+const { getAccessToken } = require("./paypal_client");
+
+exports.paypalAuth = onRequest(async (req, res) => {
+  try {
+    const token = await getAccessToken();
+
+    res.json({
+      success: true,
+      accessToken: token,
+    });
+  } catch (e) {
+    console.error(e.response?.data || e);
+
+    res.status(500).json({
+      success: false,
+      error: "Unable to authenticate with PayPal",
+    });
+  }
+});
+Step 6 - Update index.js
+
+Replace everything with:
+
+const { paypalAuth } = require("./paypal/auth");
+
+exports.paypalAuth = paypalAuth;
+Step 7 - Restart the emulator
+firebase emulators:start --only functions
+
+You should now see:
+
+Loaded functions definitions from source:
+paypalAuth
+Step 8 - Test
+
+Visit:
+
+http://127.0.0.1:5001/kota-discount/us-central1/paypalAuth
+
+If your credentials are correct, you'll receive something like:
+
+{
+    "success": true,
+    "accessToken": "A21AA..."
+}
+Milestone 2.2
+
+Once this works, we'll never expose the access token to Flutter again. This endpoint is just to verify authentication.
+
+The next milestone will create a PayPal Order using that token and return only the approval URL that Flutter needs.
+
+From there, your checkout button will begin communicating with the real PayPal Orders
