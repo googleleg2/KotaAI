@@ -1,4 +1,5 @@
 import 'display_builder.dart';
+import 'models/ai_offer.dart';
 import 'models/cart_analysis.dart';
 import 'models/customer_profile.dart';
 import 'models/discount_display.dart';
@@ -11,6 +12,14 @@ import 'savings_engine.dart';
 class DiscountEngine {
   const DiscountEngine();
 
+  /// Calculates the complete discount experience.
+  ///
+  /// This includes:
+  /// - AI offer
+  /// - reward target
+  /// - reward progress
+  /// - savings
+  /// - display information
   DiscountDisplay calculate({
     required RevenueScore revenueScore,
     required CustomerProfile customer,
@@ -18,15 +27,13 @@ class DiscountEngine {
     bool quietDay = false,
     bool payday = false,
   }) {
-    final offer =
-        const RevenueEngine().calculateOffer(
-      revenueScore,
+    final offer = calculateOffer(
+      revenueScore: revenueScore,
     );
 
     final rewardTarget =
         const RewardThresholdEngine().calculate(
-      averageOrder:
-          customer.averageOrderValue,
+      averageOrder: customer.averageOrderValue,
       quietDay: quietDay,
       payday: payday,
     );
@@ -47,6 +54,15 @@ class DiscountEngine {
       offer: offer,
       reward: reward,
       savings: savings,
+    );
+  }
+
+  /// Returns the actual AI offer selected by the revenue engine.
+  AiOffer calculateOffer({
+    required RevenueScore revenueScore,
+  }) {
+    return const RevenueEngine().calculateOffer(
+      revenueScore,
     );
   }
 }

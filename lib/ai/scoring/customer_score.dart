@@ -29,10 +29,6 @@ class CustomerScore {
       score += 20;
     }
 
-    if (customer.birthdayMonth) {
-      score -= 10;
-    }
-
     return score.clamp(0, 100);
   }
 }

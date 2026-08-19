@@ -4,7 +4,7 @@ import '../models/cart_item.dart';
 import '../models/ingredient.dart';
 
 class CartController extends ChangeNotifier {
-  static const double _baseKotaPrice = 15.0;
+  static const double _baseKotaPrice = 10.0;
 
   final List<CartItem> _items = [];
 

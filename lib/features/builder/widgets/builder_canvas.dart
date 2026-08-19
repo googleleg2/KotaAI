@@ -16,25 +16,56 @@ class BuilderCanvas extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final size = constraints.biggest;
+        /*
+         * Use the actual constraints supplied by the parent.
+         *
+         * No screen-width assumptions.
+         * No mobile/tablet/desktop pixel dimensions.
+         */
+        if (!constraints.hasBoundedWidth ||
+            !constraints.hasBoundedHeight) {
+          return const SizedBox.shrink();
+        }
 
-        return Center(
-          child: FittedBox(
-            fit: BoxFit.contain,
-            child: SizedBox(
-              width: 420,
-              height: 480,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const DropBread(),
+        final availableWidth = constraints.maxWidth;
+        final availableHeight = constraints.maxHeight;
 
-                  IngredientStack(
-                    ingredients: scene.stack,
-                  ),
-                ],
+        if (availableWidth <= 0 ||
+            availableHeight <= 0) {
+          return const SizedBox.shrink();
+        }
+
+        return SizedBox(
+          width: availableWidth,
+          height: availableHeight,
+          child: Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              /*
+               * The Kota base fills the responsive builder area
+               * available to it.
+               *
+               * BreadLayer then calculates the actual bread size
+               * from these constraints.
+               */
+              const Positioned.fill(
+                child: DropBread(),
               ),
-            ),
+
+              /*
+               * Ingredients occupy the exact same coordinate
+               * system as the Kota.
+               *
+               * IngredientStack calculates their positions from
+               * the actual canvas dimensions.
+               */
+              Positioned.fill(
+                child: IngredientStack(
+                  ingredients: scene.stack,
+                ),
+              ),
+            ],
           ),
         );
       },

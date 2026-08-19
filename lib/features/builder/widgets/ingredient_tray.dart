@@ -26,25 +26,28 @@ class IngredientTray extends StatelessWidget {
   }
 
   Widget _mobileTray(BuildContext context) {
-    return SizedBox(
-      height: 150,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 12,
-        ),
-        scrollDirection: Axis.horizontal,
-        itemCount: ingredients.length,
-        separatorBuilder: (_, __) =>
-            const SizedBox(width: 18),
-        itemBuilder: (_, index) {
-          return DragIngredient(
-            ingredient: ingredients[index],
-          );
-        },
+  return SizedBox.expand(
+    child: ListView.separated(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 4,
       ),
-    );
-  }
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      itemCount: ingredients.length,
+      separatorBuilder: (_, __) {
+        return const SizedBox(width: 10);
+      },
+      itemBuilder: (_, index) {
+        return Center(
+          child: DragIngredient(
+            ingredient: ingredients[index],
+          ),
+        );
+      },
+    ),
+  );
+}
 
   Widget _tabletTray(BuildContext context) {
     return SizedBox(

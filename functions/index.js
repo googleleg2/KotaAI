@@ -1,14 +1,18 @@
-// const { onRequest } = require("firebase-functions/v2/https");
+// const { paypalAuth } =
+// require("./paypal/auth");
 
-// exports.helloWorld = onRequest((req, res) => {
-//   res.status(200).json({
-//     success: true,
-//     message: "Firebase Functions v2 is working!",
-//   });
-// });
+const {
+  createPaypalOrder,
+} = require("./paypal/create_order");
 
-const { paypalAuth } = require("./paypal/auth");
-const { createPaypalOrder } = require("./paypal/create_order");
+const {
+  capturePaypalOrder,
+} = require("./paypal/capture_order");
 
-exports.paypalAuth = paypalAuth;
+// exports.paypalAuth = paypalAuth;
+
 exports.createPaypalOrder = createPaypalOrder;
+
+exports.capturePaypalOrder =
+    capturePaypalOrder;
+

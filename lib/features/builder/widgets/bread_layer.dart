@@ -38,64 +38,141 @@ class _BreadLayerState extends State<BreadLayer>
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final availableWidth = constraints.maxWidth;
+        final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
 
-        // Responsive bread width
-        final breadWidth = (availableWidth * 0.82).clamp(260.0, 420.0);
+        if (width <= 0 || height <= 0) {
+          return const SizedBox.shrink();
+        }
+
+        /*
+         * ============================================================
+         * RESPONSIVE KOTA SIZE
+         * ============================================================
+         *
+         * IMPORTANT:
+         *
+         * On a phone the builder is normally much narrower than it
+         * is tall. Therefore the Kota should primarily be controlled
+         * by WIDTH.
+         *
+         * Using min(width, height) here caused the Kota to shrink
+         * whenever the vertical builder area became constrained.
+         */
+
+        final widthBasedSize = width * 0.88;
+
+        /*
+         * The Kota should never be wider than the actual area
+         * available to it.
+         */
+        final breadWidth = min(
+          widthBasedSize,
+          width,
+        );
+
+        if (breadWidth <= 0) {
+          return const SizedBox.shrink();
+        }
+
+        /*
+         * ============================================================
+         * RESPONSIVE DIMENSIONS
+         * ============================================================
+         */
 
         final shadowWidth = breadWidth * 0.55;
-        final shadowHeight = breadWidth * 0.12;
+        final shadowHeight = breadWidth * 0.11;
+
+        final floatingDistance = breadWidth * 0.012;
+
+        final shadowBottom = breadWidth * 0.025;
+
+        final blur = breadWidth * 0.055;
+
+        final spread = breadWidth * 0.008;
+
+        /*
+         * Hover animation.
+         */
+        final hoverScale = widget.hovering ? 1.025 : 1.0;
 
         return AnimatedBuilder(
           animation: controller,
           builder: (_, __) {
-            final wave =
-                sin(controller.value * pi * 2);
+            final wave = sin(
+              controller.value * pi * 2,
+            );
 
-            final floating = wave * 6;
+            final floating =
+                wave * floatingDistance;
 
-            final scale =
-                widget.hovering ? 1.03 : 1.0;
+            return Center(
+              child: Transform.translate(
+                offset: Offset(
+                  0,
+                  floating,
+                ),
+                child: Transform.scale(
+                  scale: hoverScale,
+                  child: SizedBox(
+                    width: breadWidth,
+                    height: height,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      clipBehavior: Clip.none,
+                      children: [
+                        /*
+                         * ==================================================
+                         * SHADOW
+                         * ==================================================
+                         */
 
-            final blur =
-                26 + (wave * 6);
-
-            return Transform.translate(
-              offset: Offset(0, floating),
-              child: Transform.scale(
-                scale: scale,
-                child: Stack(
-                  alignment: Alignment.center,
-                  clipBehavior: Clip.none,
-                  children: [
-                    Positioned(
-                      bottom: 12,
-                      child: AnimatedContainer(
-                        duration: const Duration(
-                          milliseconds: 150,
-                        ),
-                        width: shadowWidth,
-                        height: shadowHeight,
-                        decoration: BoxDecoration(
-                          borderRadius:
-                              BorderRadius.circular(100),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(.35),
-                              blurRadius: blur,
-                              spreadRadius: 4,
+                        Positioned(
+                          bottom: shadowBottom,
+                          child: SizedBox(
+                            width: shadowWidth,
+                            height: shadowHeight,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.circular(
+                                  breadWidth,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black
+                                        .withOpacity(.35),
+                                    blurRadius: blur,
+                                    spreadRadius: spread,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
 
-                    Image.asset(
-                      "assets/images/kota.png",
-                      width: breadWidth,
-                      fit: BoxFit.contain,
+                        /*
+                         * ==================================================
+                         * KOTA BASE
+                         * ==================================================
+                         *
+                         * Width is responsive to the actual canvas.
+                         *
+                         * We DO NOT use a fixed width.
+                         */
+
+                        Align(
+                          alignment: Alignment.center,
+                          child: Image.asset(
+                            'assets/images/kota.png',
+                            width: breadWidth,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
               ),
             );

@@ -1,25 +1,31 @@
 class Ingredient {
   final String id;
 
-  /// Display name
+  /// Display name.
   final String name;
 
-  /// Price added to the Kota
+  /// Price added to the Kota.
   final double price;
 
-  /// Asset path of the ingredient PNG
+  /// Asset path.
   final String imagePath;
 
-  /// Width when rendered on the Kota
+  /// Optional legacy design width.
+  ///
+  /// The responsive renderer should calculate the actual width
+  /// from the available Kota size.
   final double width;
 
-  /// Height this ingredient adds to the stack
+  /// Optional legacy stack height.
+  ///
+  /// The responsive renderer should calculate the actual vertical
+  /// spacing from the available Kota size.
   final double stackHeight;
 
-  /// Whether customers can currently order it
+  /// Whether customers can currently order it.
   final bool available;
 
-  /// Optional description
+  /// Optional description.
   final String description;
 
   const Ingredient({
@@ -27,22 +33,25 @@ class Ingredient {
     required this.name,
     required this.price,
     required this.imagePath,
-
     this.width = 170,
     this.stackHeight = 18,
     this.available = true,
     this.description = '',
   });
 
-  factory Ingredient.fromMap(Map<String, dynamic> map) {
+  factory Ingredient.fromMap(
+    Map<String, dynamic> map,
+  ) {
     return Ingredient(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       price: (map['price'] ?? 0).toDouble(),
       imagePath: map['imagePath'] ?? '',
 
+      // Kept only for compatibility with existing Firestore data.
       width: (map['width'] ?? 170).toDouble(),
-      stackHeight: (map['stackHeight'] ?? 18).toDouble(),
+      stackHeight:
+          (map['stackHeight'] ?? 18).toDouble(),
 
       available: map['available'] ?? true,
       description: map['description'] ?? '',
@@ -84,3 +93,4 @@ class Ingredient {
     );
   }
 }
+

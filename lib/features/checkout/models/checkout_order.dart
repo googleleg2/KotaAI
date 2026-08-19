@@ -1,14 +1,12 @@
+import '../../../models/cart_item.dart';
+
 class CheckoutOrder {
-  final List<dynamic> items;
+  final List<CartItem> items;
 
   final double subtotal;
-
   final double discount;
-
   final double savings;
-
   final double deliveryFee;
-
   final double total;
 
   const CheckoutOrder({

@@ -11,56 +11,70 @@ class KotaSceneController extends ChangeNotifier {
     required this.cartController,
   });
 
-  /// Ingredients currently stacked on the Kota
+  /// Ingredients currently stacked on the Kota.
+  ///
+  /// IMPORTANT:
+  /// This controller stores WHAT has been added.
+  ///
+  /// It does NOT calculate screen coordinates.
+  /// IngredientStack is responsible for deciding WHERE each
+  /// ingredient is rendered based on the available canvas size.
   final List<StackedIngredient> _stack = [];
 
-  List<StackedIngredient> get stack => List.unmodifiable(_stack);
+  List<StackedIngredient> get stack =>
+      List.unmodifiable(_stack);
 
-  /// Current total height of the stack
-  double get stackHeight {
-    double height = 55;
+  /// Whether the Kota currently has ingredients.
+  bool get isEmpty => _stack.isEmpty;
 
-    for (final item in _stack) {
-      height += item.ingredient.stackHeight;
-    }
+  /// Number of ingredients currently stacked.
+  int get count => _stack.length;
 
-    return height;
-  }
-
-  /// Add ingredient onto the Kota
+  /// Adds an ingredient to the top of the current stack.
+  ///
+  /// No fixed y-position is stored here.
+  /// The renderer calculates the correct position responsively.
   void addIngredient(Ingredient ingredient) {
-    double yPosition = 55;
-
-    for (final item in _stack) {
-      yPosition += item.ingredient.stackHeight;
-    }
-
     final stacked = StackedIngredient(
       ingredient: ingredient,
-      yOffset: yPosition,
+
+      // Animation only.
+      //
+      // The ingredient will visually animate upward into
+      // its calculated stack position.
       animationOffset: 40,
-      scale: 1.15,
+
+      // Normal rendering scale.
+      //
+      // Actual image dimensions are calculated by
+      // IngredientStack from the available Kota size.
+      scale: 1.0,
     );
 
     _stack.add(stacked);
 
+    // Keep the cart synchronized with the visual stack.
     cartController.addIngredient(ingredient);
 
     notifyListeners();
   }
 
-  /// Remove the last ingredient
+  /// Removes the last ingredient added to the Kota.
   void removeLastIngredient() {
-    if (_stack.isEmpty) return;
+    if (_stack.isEmpty) {
+      return;
+    }
 
     final removed = _stack.removeLast();
 
-    cartController.removeIngredient(removed.ingredient);
+    cartController.removeIngredient(
+      removed.ingredient,
+    );
 
     notifyListeners();
   }
 
-  /// Remove all ingredients
+  /// Removes every ingredient from the Kota.
   void clear() {
     _stack.clear();
 
@@ -68,10 +82,4 @@ class KotaSceneController extends ChangeNotifier {
 
     notifyListeners();
   }
-
-  /// Returns true if the Kota has no toppings
-  bool get isEmpty => _stack.isEmpty;
-
-  /// Number of stacked ingredients
-  int get count => _stack.length;
 }

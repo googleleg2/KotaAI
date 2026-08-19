@@ -19,6 +19,8 @@ import '../../features/builder/widgets/builder_canvas.dart';
 import '../../features/builder/widgets/floating_checkout.dart';
 import '../../features/builder/widgets/ingredient_tray.dart';
 
+import '../../features/checkout/controllers/checkout_controller.dart';
+import '../../features/checkout/models/checkout_order.dart';
 import '../../features/checkout/screens/checkout_screen.dart';
 import '../../widgets/animated_price.dart';
 import '../../widgets/smart_discount_bar.dart';
@@ -60,7 +62,7 @@ class BuilderScreen extends StatelessWidget {
               averageOrderValue: 0,
               loyaltyPoints: 0,
               daysSinceLastOrder: 0,
-              birthdayMonth: false,
+              // birthdayMonth: false,
             ),
             cart: CartAnalysis(
               total: cart.totalPrice,
@@ -120,7 +122,20 @@ class BuilderScreen extends StatelessWidget {
   ),
 
   checkout: FloatingCheckout(
-     onPressed: () {
+  onPressed: () {
+    final checkoutOrder = CheckoutOrder(
+      items: List.from(cart.items),
+      subtotal: cart.totalPrice,
+      discount: 0,
+      savings: 0,
+      deliveryFee: 0,
+      total: cart.totalPrice,
+    );
+
+    context
+        .read<CheckoutController>()
+        .loadOrder(checkoutOrder);
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -128,7 +143,7 @@ class BuilderScreen extends StatelessWidget {
       ),
     );
   },
-  ),
+),
 ),
               ),
             ),
